@@ -1,6 +1,8 @@
 from rest_framework import generics, permissions
 from .models import Registration
 from .serializers import RegistrationSerializer
+from rest_framework import generics
+from accounts.permissions import IsAdminUserRole
 
 
 class RegistrationListCreateView(generics.ListCreateAPIView):
@@ -19,3 +21,10 @@ class RegistrationListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class RegistrationStatusUpdateView(generics.UpdateAPIView):
+    queryset = Registration.objects.all()
+    serializer_class = RegistrationSerializer
+    permission_classes = [IsAdminUserRole]
+    lookup_field = 'id'

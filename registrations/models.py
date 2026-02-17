@@ -47,5 +47,6 @@ class Registration(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # ✅ MUST be inside class
     def __str__(self):
-        return f"{self.service_type} - {self.user.email}"
+        return f"ID:{self.id} | {self.name_option_1} | {self.user.email}"

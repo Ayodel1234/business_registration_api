@@ -18,6 +18,8 @@ class Query(models.Model):
 
     reason = models.TextField()
     instruction = models.TextField(blank=True)
+    response = models.TextField(blank=True, null=True)
+
 
     status = models.CharField(
         max_length=20,

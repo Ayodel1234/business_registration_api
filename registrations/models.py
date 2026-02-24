@@ -39,6 +39,11 @@ class Registration(models.Model):
         null=True
     )
 
+    rejection_reason = models.TextField(
+        blank=True,
+        null=True
+    )
+
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
@@ -47,6 +52,5 @@ class Registration(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # ✅ MUST be inside class
     def __str__(self):
         return f"ID:{self.id} | {self.name_option_1} | {self.user.email}"

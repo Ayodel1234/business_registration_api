@@ -12,6 +12,9 @@ from accounts.permissions import IsAdminRole
 
 from rest_framework.generics import UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.views import APIView
+from django.db.models import Count
 
 
 
@@ -66,3 +69,69 @@ class RegistrationApproveView(UpdateAPIView):
             {"message": "Registration approved successfully"},
             status=status.HTTP_200_OK
         )
+
+
+class RegistrationRejectView(UpdateAPIView):
+    queryset = Registration.objects.all()
+    serializer_class = RegistrationSerializer
+    permission_classes = [IsAuthenticated, IsAdminRole]
+    lookup_field = 'id'
+
+    def patch(self, request, *args, **kwargs):
+        registration = self.get_object()
+
+        rejection_reason = request.data.get('rejection_reason')
+
+        if not rejection_reason:
+            return Response(
+                {"error": "rejection_reason is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        registration.status = 'rejected'
+        registration.rejection_reason = rejection_reason
+        registration.approved_name = None
+        registration.save()
+
+        return Response(
+            {"message": "Registration rejected successfully"},
+            status=status.HTTP_200_OK
+        )
+
+
+class RegistrationDetailView(RetrieveAPIView):
+    queryset = Registration.objects.all()
+    serializer_class = RegistrationSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        user = self.request.user
+
+        # Admin can see all
+        if user.role == 'admin':
+            return Registration.objects.all()
+
+        # Normal user sees only their own
+        return Registration.objects.filter(user=user)
+
+
+
+
+class AdminDashboardView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminRole]
+
+    def get(self, request):
+        total = Registration.objects.count()
+
+        status_counts = Registration.objects.values('status') \
+            .annotate(count=Count('status'))
+
+        response_data = {
+            "total_registrations": total
+        }
+
+        for item in status_counts:
+            response_data[item['status']] = item['count']
+
+        return Response(response_data)

@@ -1,23 +1,18 @@
-from rest_framework import generics, permissions
-from .models import Registration
-from .serializers import RegistrationSerializer
-from rest_framework import generics
-from accounts.permissions import IsAdminUserRole
-
-from rest_framework.decorators import action
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from rest_framework import status
-from accounts.permissions import IsAdminRole
-
-
-from rest_framework.generics import UpdateAPIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import RetrieveAPIView
 from rest_framework.views import APIView
+from rest_framework.generics import UpdateAPIView, RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
 from django.db.models import Count
 
+from .models import Registration
+from .serializers import RegistrationSerializer
+from accounts.permissions import IsAdminUserRole, IsAdminRole
 
 
+# ======================================
+# List & Create Registrations
+# ======================================
 class RegistrationListCreateView(generics.ListCreateAPIView):
     serializer_class = RegistrationSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -25,17 +20,20 @@ class RegistrationListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
 
-        # Admin can see all registrations
+        # Admin sees all
         if user.role == 'admin':
             return Registration.objects.all()
 
-        # Normal users see only their own
+        # Normal user sees only their own
         return Registration.objects.filter(user=user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
 
+# ======================================
+# Update Status (Generic Admin Update)
+# ======================================
 class RegistrationStatusUpdateView(generics.UpdateAPIView):
     queryset = Registration.objects.all()
     serializer_class = RegistrationSerializer
@@ -43,7 +41,9 @@ class RegistrationStatusUpdateView(generics.UpdateAPIView):
     lookup_field = 'id'
 
 
-
+# ======================================
+# Approve Registration
+# ======================================
 class RegistrationApproveView(UpdateAPIView):
     queryset = Registration.objects.all()
     serializer_class = RegistrationSerializer
@@ -62,7 +62,7 @@ class RegistrationApproveView(UpdateAPIView):
             )
 
         registration.approved_name = approved_name
-        registration.status = 'approved'
+        registration.status = 'name_approved'   # ✅ FIXED HERE
         registration.save()
 
         return Response(
@@ -71,6 +71,9 @@ class RegistrationApproveView(UpdateAPIView):
         )
 
 
+# ======================================
+# Reject Registration
+# ======================================
 class RegistrationRejectView(UpdateAPIView):
     queryset = Registration.objects.all()
     serializer_class = RegistrationSerializer
@@ -99,6 +102,9 @@ class RegistrationRejectView(UpdateAPIView):
         )
 
 
+# ======================================
+# Retrieve Single Registration
+# ======================================
 class RegistrationDetailView(RetrieveAPIView):
     queryset = Registration.objects.all()
     serializer_class = RegistrationSerializer
@@ -108,16 +114,15 @@ class RegistrationDetailView(RetrieveAPIView):
     def get_queryset(self):
         user = self.request.user
 
-        # Admin can see all
         if user.role == 'admin':
             return Registration.objects.all()
 
-        # Normal user sees only their own
         return Registration.objects.filter(user=user)
 
 
-
-
+# ======================================
+# Admin Dashboard Stats
+# ======================================
 class AdminDashboardView(APIView):
     permission_classes = [IsAuthenticated, IsAdminRole]
 

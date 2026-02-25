@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/registrations/', include('registrations.urls')),
     path('api/queries/', include('queries.urls')),
     path('api/documents/', include('documents.urls')),  # ← THIS WAS MISSING
+    
 ]
 
 

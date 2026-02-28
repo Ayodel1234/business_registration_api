@@ -221,6 +221,99 @@ Swagger (if enabled)
 Django Admin
 
 
+---
+
+# 🔐 Environment Variables
+
+For security, sensitive settings should be stored in a `.env` file in production.
+
+Example `.env` file:
+
+```env
+SECRET_KEY=your-secret-key
+DEBUG=True
+ALLOWED_HOSTS=127.0.0.1,localhost
+
+
+⚠️ Note: This project currently uses settings.py for development.
+In production, environment variables should be used instead of hardcoded values.
+
+
+📡 Example API Requests (cURL)
+🔐 Login
+curl -X POST http://127.0.0.1:8000/api/auth/login/ \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "admin@test.com",
+  "password": "AdminPass123"
+}'
+
+
+📝 Create Registration
+curl -X POST http://127.0.0.1:8000/api/registrations/ \
+-H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+-H "Content-Type: application/json" \
+-d '{
+  "service_type": "business_name",
+  "name_option_1": "Alpha Tech Solutions",
+  "name_option_2": "Alpha Innovations"
+}'
+
+
+✅ Approve Registration (Admin Only)
+curl -X PATCH http://127.0.0.1:8000/api/registrations/4/approve/ \
+-H "Authorization: Bearer ADMIN_ACCESS_TOKEN" \
+-H "Content-Type: application/json" \
+-d '{
+  "approved_name": "Alpha Tech Solutions"
+}'
+
+
+🔄 System Workflow Diagram
+User Registers Account
+        │
+        ▼
+User Logs In (JWT Issued)
+        │
+        ▼
+User Submits Business Name Options
+        │
+        ▼
+Admin Reviews Submission
+        │
+        ├── Reject → Status: rejected
+        │
+        └── Approve → Status: name_approved
+                          │
+                          ▼
+                Admin Uploads Official Certificate
+                          │
+                          ▼
+                    Status: completed
+🧪 Sample Test Credentials
+
+You can create these manually via admin panel or registration endpoint.
+
+
+👤 Regular User
+Email: user@test.com
+Password: UserPass123
+Role: user
+
+👑 Admin User
+Email: admin@test.com
+Password: AdminPass123
+Role: admin
+
+⚠️ These are example credentials for local development only.
+
+
+📁 Project Structure
+accounts/        → Custom user model & authentication
+registrations/   → Business registration workflow
+documents/       → Document upload & restrictions
+config/          → Project settings and root configuration
+
 
 📌 Future Improvements
 
@@ -240,16 +333,3 @@ Backend Engineering Capstone Project
 ALX Africa
 
 
-
-🏁 Capstone Notes
-
-This project demonstrates:
-Clean architecture
-Role-based access control
-Proper RESTful endpoint structure
-Secure authentication
-Business workflow modeling
-Query handling logic
-Document management system
-Pagination & filtering
-Admin analytics

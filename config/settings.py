@@ -14,8 +14,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 SECRET_KEY = 'django-insecure-+u&&9*m$&xl6!c9a@b1bq)hebdpt_gvg2@q!=ta43lm++hfbt5'
 DEBUG = False
-ALLOWED_HOSTS = ['Ayodele1234.pythonanywhere.com']
-CSRF_TRUSTED_ORIGINS = ['https://Ayodele1234.pythonanywhere.com']
+ALLOWED_HOSTS = ['ayodel1234.pythonanywhere.com']
+CSRF_TRUSTED_ORIGINS = ['https://ayodel1234.pythonanywhere.com']
 
 # APPLICATIONS
 INSTALLED_APPS = [

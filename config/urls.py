@@ -3,9 +3,13 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
 
+def home(request):
+    return JsonResponse({"message": "Business Registration API is live 🚀"})
 
 urlpatterns = [
+    path('', home),
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
 
@@ -16,7 +20,7 @@ urlpatterns = [
     # App URLs
     path('api/registrations/', include('registrations.urls')),
     path('api/documents/', include('documents.urls')),  # ← THIS WAS MISSING
-    
+
 ]
 
 

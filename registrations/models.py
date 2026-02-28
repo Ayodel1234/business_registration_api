@@ -3,6 +3,7 @@ from django.conf import settings
 
 
 class Registration(models.Model):
+
     SERVICE_CHOICES = (
         ('business_name', 'Business Name'),
         ('ltd', 'Private Limited Company'),
@@ -35,6 +36,12 @@ class Registration(models.Model):
 
     approved_name = models.CharField(
         max_length=255,
+        blank=True,
+        null=True
+    )
+
+    # 🔥 NEW FIELD (For Admin Queries)
+    query_message = models.TextField(
         blank=True,
         null=True
     )

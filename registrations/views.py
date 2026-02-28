@@ -20,12 +20,18 @@ class RegistrationListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
 
-        # Admin sees all
+        # Base queryset depending on role
         if user.role == 'admin':
-            return Registration.objects.all()
+            queryset = Registration.objects.all()
+        else:
+            queryset = Registration.objects.filter(user=user)
 
-        # Normal user sees only their own
-        return Registration.objects.filter(user=user)
+        # 🔥 Add Status Filtering
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -62,7 +68,7 @@ class RegistrationApproveView(UpdateAPIView):
             )
 
         registration.approved_name = approved_name
-        registration.status = 'name_approved'   # ✅ FIXED HERE
+        registration.status = 'name_approved'
         registration.save()
 
         return Response(
@@ -103,6 +109,72 @@ class RegistrationRejectView(UpdateAPIView):
 
 
 # ======================================
+# Admin Raises Query
+# ======================================
+class RegistrationQueryView(UpdateAPIView):
+    queryset = Registration.objects.all()
+    serializer_class = RegistrationSerializer
+    permission_classes = [IsAuthenticated, IsAdminRole]
+    lookup_field = 'id'
+
+    def patch(self, request, *args, **kwargs):
+        registration = self.get_object()
+
+        query_message = request.data.get('query_message')
+
+        if not query_message:
+            return Response(
+                {"error": "query_message is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        registration.query_message = query_message
+        registration.status = 'queried'
+        registration.save()
+
+        return Response(
+            {"message": "Query sent to user successfully"},
+            status=status.HTTP_200_OK
+        )
+
+
+# ======================================
+# User Responds To Query
+# ======================================
+class RegistrationRespondView(UpdateAPIView):
+    queryset = Registration.objects.all()
+    serializer_class = RegistrationSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+
+    def patch(self, request, *args, **kwargs):
+        registration = self.get_object()
+
+        if registration.user != request.user:
+            return Response(
+                {"error": "You are not allowed to respond to this registration"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        response_message = request.data.get('response_message')
+
+        if not response_message:
+            return Response(
+                {"error": "response_message is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        registration.query_message = response_message
+        registration.status = 'responded'
+        registration.save()
+
+        return Response(
+            {"message": "Response submitted successfully"},
+            status=status.HTTP_200_OK
+        )
+
+
+# ======================================
 # Retrieve Single Registration
 # ======================================
 class RegistrationDetailView(RetrieveAPIView):
@@ -129,8 +201,11 @@ class AdminDashboardView(APIView):
     def get(self, request):
         total = Registration.objects.count()
 
-        status_counts = Registration.objects.values('status') \
+        status_counts = (
+            Registration.objects
+            .values('status')
             .annotate(count=Count('status'))
+        )
 
         response_data = {
             "total_registrations": total

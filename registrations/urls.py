@@ -6,6 +6,7 @@ from .views import (
     RegistrationRejectView,
     RegistrationDetailView,
     AdminDashboardView,
+    RegistrationRespondView,
 )
 
 urlpatterns = [
@@ -15,4 +16,5 @@ urlpatterns = [
     path('<int:id>/', RegistrationDetailView.as_view(), name='registration-detail'),
     path('<int:id>/approve/', RegistrationApproveView.as_view(), name='registration-approve'),
     path('<int:id>/reject/', RegistrationRejectView.as_view(), name='registration-reject'),
+    path('<int:id>/respond/', RegistrationRespondView.as_view(), name='registration-respond'),
 ]       

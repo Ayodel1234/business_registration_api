@@ -24,10 +24,12 @@ class DocumentUploadView(generics.CreateAPIView):
         # ===============================
         # Normal User Logic
         # ===============================
-        if not user.is_staff:  # Better than user.role
+        if not user.is_staff:
+            # User can only upload to their own registration
             if registration.user != user:
                 raise PermissionDenied("You cannot upload to this registration.")
 
+            # User cannot upload official documents
             if document_type not in user_allowed:
                 raise PermissionDenied("You are not allowed to upload this document type.")
 
@@ -35,10 +37,12 @@ class DocumentUploadView(generics.CreateAPIView):
         # Admin Logic
         # ===============================
         else:
+            # Admin must upload only allowed official document types
             if document_type not in admin_allowed:
                 raise PermissionDenied("Admin cannot upload this document type.")
 
-            if registration.status not in ['approved', 'completed', 'in_progress']:
+            # Allow upload ONLY if registration is name_approved or completed
+            if registration.status not in ['name_approved', 'completed']:
                 raise PermissionDenied(
                     "Cannot upload official documents unless registration is approved."
                 )
@@ -56,7 +60,9 @@ class DocumentListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
 
+        # Admin sees all documents
         if user.is_staff:
             return Document.objects.all()
 
+        # User sees only their documents
         return Document.objects.filter(registration__user=user)

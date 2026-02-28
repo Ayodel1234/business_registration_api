@@ -13,9 +13,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY
 SECRET_KEY = 'django-insecure-+u&&9*m$&xl6!c9a@b1bq)hebdpt_gvg2@q!=ta43lm++hfbt5'
-DEBUG = True
-ALLOWED_HOSTS = []
-
+DEBUG = False
+ALLOWED_HOSTS = ['Ayodele1234.pythonanywhere.com']
+CSRF_TRUSTED_ORIGINS = ['https://Ayodele1234.pythonanywhere.com']
 
 # APPLICATIONS
 INSTALLED_APPS = [
@@ -95,7 +95,7 @@ USE_TZ = True
 
 
 # STATIC FILES
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 
 # MEDIA FILES (Document Uploads)
@@ -140,3 +140,10 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+import os
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
